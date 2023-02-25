@@ -3,13 +3,16 @@
 /* eslint-disable */
 
 import { HealthChartContract } from "./HealthChart";
+import { MigrationsContract } from "./Migrations";
 
 declare global {
   namespace Truffle {
     interface Artifacts {
       require(name: "HealthChart"): HealthChartContract;
+      require(name: "Migrations"): MigrationsContract;
     }
   }
 }
 
 export { HealthChartContract, HealthChartInstance } from "./HealthChart";
+export { MigrationsContract, MigrationsInstance } from "./Migrations";
