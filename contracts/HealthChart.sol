@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 contract HealthChart {
     address private owner;
 
-    uint32 public doctor_id = 0;
+    uint32 public doctor_id = 1; //Start with 1 so we can check for existing doctors
     uint32 public pacient_id = 0;
     uint128 public event_id = 0;
 
@@ -35,7 +35,7 @@ contract HealthChart {
     mapping(uint128 => healthEvent) public healthEvents;
     mapping(uint128 => uint128[]) public eventsForPatient; //Track the events for a patient
     
-    event UpdateChart(uint32 healthEventId);
+    event UpdateChart(uint32 patientId, uint128 healthEventId);
     event TransferPatient(uint32 patientId);
   
     constructor()  {
@@ -46,14 +46,14 @@ contract HealthChart {
         return msg.sender == owner;
     }
 
-    //A doctor can be added <- by who? only the owner
+    //A doctor can be added <- by who? only an existing doctor? 
     function addDoctor(string memory _userName, 
                         string memory _passWord, 
                         address _doctorAddress, 
                         string memory _firstName, 
                         string memory _lastName) public returns (uint32) {
-        //TODO: Add check for owner
-        require(isOwner());
+        //TODO: Add a check here - maybe this
+        require(doctorAddresses[msg.sender] > 0);
 
         uint32 id = doctor_id++;
         doctors[id].UserName = _userName;
@@ -105,6 +105,7 @@ contract HealthChart {
         healthEvents[id].EventData = _eventData;
         healthEvents[id].EventTimeStamp = uint32(block.timestamp);
         eventsForPatient[_patientId].push(id); //Add a new event to the list
+        emit UpdateChart(_patientId, id);
         return id;
     }
 
