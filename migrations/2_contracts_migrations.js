@@ -1,5 +1,1 @@
-const HealthChart = artifacts.require("HealthChart");
-
-module.exports = function (deployer) {
-  deployer.deploy(HealthChart, "Health Chart");
-};
+module.exports = require("../migrations-ts/2_contracts_migrations.ts")(artifacts);

@@ -1,10 +1,15 @@
-const Migrations = artifacts.require('Migrations')
+module.exports = (artifacts: Truffle.Artifacts) => {
+  return async (
+    deployer: Truffle.Deployer,
+    network: "development"
+  ) => {
+    const Migrations = artifacts.require("Migrations");
 
-const migration: Truffle.Migration = function (deployer) {
-  deployer.deploy(Migrations)
-}
+    await deployer.deploy(Migrations);
 
-module.exports = migration
-
-// because of https://stackoverflow.com/questions/40900791/cannot-redeclare-block-scoped-variable-in-unrelated-files
-export {}
+    const migrations = await Migrations.deployed();
+    console.log(
+      `Migrations deployed at ${migrations.address} in network: ${network}.`
+    );
+  };
+};
