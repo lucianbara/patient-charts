@@ -53,6 +53,7 @@ contract HealthChart {
                         string memory _firstName, 
                         string memory _lastName) public returns (uint32) {
         //TODO: Add check for owner
+        require(isOwner());
 
         uint32 id = doctor_id++;
         doctors[id].UserName = _userName;
@@ -78,7 +79,14 @@ contract HealthChart {
                             return id;
                         }
     //A doctor can be authenticated to have access to the system
-    //TODO
+   //TODO: Just a lazy hack
+   function authenticateDoctor(uint32 _id, string memory _userName, string memory _password) public view returns (bool) {
+        if(keccak256(abi.encodePacked(doctors[_id].UserName)) == keccak256(abi.encodePacked(_userName)) 
+        && keccak256(abi.encodePacked(doctors[_id].Password)) == keccak256(abi.encodePacked(_password)) )
+            return true;
+        
+        return false;
+   }
 
     //A doctor can transfer his pacient to another doctor
     function transferPatient(uint32 _currentDoctorId, uint32 _newDoctorId, uint32 _patientId) public returns (bool) {
