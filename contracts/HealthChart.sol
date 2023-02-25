@@ -53,7 +53,8 @@ contract HealthChart {
                         string memory _firstName, 
                         string memory _lastName) public returns (uint32) {
         //TODO: Add a check here - maybe this
-        require(doctorAddresses[msg.sender] > 0);
+        if(doctor_id > 1)
+           require(doctorAddresses[msg.sender] > 0);
 
         uint32 id = doctor_id++;
         doctors[id].UserName = _userName;
@@ -71,13 +72,13 @@ contract HealthChart {
     function addPatient(string memory _ssn,
                         string memory _firstName,
                         string memory _lastName) public returns (uint32) {
-                            uint32 id = pacient_id++;
-                            patients[id].SSN = _ssn;
-                            patients[id].FirstName = _firstName;
-                            patients[id].LastName = _lastName;
-                            patients[id].CurrantDoctor = msg.sender;
-                            return id;
-                        }
+        uint32 id = pacient_id++;
+        patients[id].SSN = _ssn;
+        patients[id].FirstName = _firstName;
+        patients[id].LastName = _lastName;
+        patients[id].CurrantDoctor = msg.sender;
+        return id;
+    }
     //A doctor can be authenticated to have access to the system
    //TODO: Just a lazy hack
    function authenticateDoctor(uint32 _id, string memory _userName, string memory _password) public view returns (bool) {
