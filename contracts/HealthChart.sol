@@ -5,7 +5,6 @@ contract HealthChart {
     address private owner;
 
     uint32 public doctor_id = 0;
-    uint32 public pacient_id = 0;
     uint128 public event_id = 0;
 
     struct doctor {
@@ -17,6 +16,7 @@ contract HealthChart {
     }   
     mapping(uint32 => doctor) public doctors;
     mapping(address => uint32) public doctorAddresses;
+    mapping(string => doctor) public doctorUsers;
 
     struct patient {        
         string SSN;
@@ -24,19 +24,19 @@ contract HealthChart {
         string LastName;
         address CurrantDoctor;
     }
-    mapping(uint32 => patient) public patients;
+    mapping(string => patient) public patients; //patient SSN
 
     struct healthEvent {
-        uint32 PatientId;
+        string PatientSsn;
         address DoctorAddress; //Added by doctor
         string EventData; //can be anything string for now
         uint32 EventTimeStamp;
     }
     mapping(uint128 => healthEvent) public healthEvents;
-    mapping(uint128 => uint128[]) public eventsForPatient; //Track the events for a patient
+    mapping(string => uint128[]) public eventsForPatient; //Track the events for a patient
     
-    event UpdateChart(uint32 patientId, uint128 healthEventId);
-    event TransferPatient(uint32 patientId);
+    event UpdateChart(string patientSsn, uint128 healthEventId);
+    event TransferPatient(string patientSsn);
   
     constructor()  {
         owner = msg.sender;
@@ -52,7 +52,7 @@ contract HealthChart {
                         address _doctorAddress, 
                         string memory _firstName, 
                         string memory _lastName) public returns (uint32) {
-
+        require(doctorUsers[_userName].DoctorAddress == address(0), "Doctor already exists in the block chain");
         uint32 id = doctor_id++;
         doctors[id].UserName = _userName;
         doctors[id].Password = _passWord;
@@ -61,6 +61,7 @@ contract HealthChart {
         doctors[id].LastName = _lastName;
 
         doctorAddresses[_doctorAddress] = id;
+        doctorUsers[_userName] = doctors[id];
 
         return id;
     }
@@ -68,13 +69,13 @@ contract HealthChart {
     //A doctor can add a patient
     function addPatient(string memory _ssn,
                         string memory _firstName,
-                        string memory _lastName) public returns (uint32) {
-        uint32 id = pacient_id++;
-        patients[id].SSN = _ssn;
-        patients[id].FirstName = _firstName;
-        patients[id].LastName = _lastName;
-        patients[id].CurrantDoctor = msg.sender;
-        return id;
+                        string memory _lastName) public returns (bool) {
+        require(keccak256(abi.encodePacked(patients[_ssn].SSN)) == keccak256(abi.encodePacked("")), "Patient already exists in the block chain");
+        patients[_ssn].SSN = _ssn;
+        patients[_ssn].FirstName = _firstName;
+        patients[_ssn].LastName = _lastName;
+        patients[_ssn].CurrantDoctor = msg.sender;
+        return true;
     }
     //A doctor can be authenticated to have access to the system
    //TODO: Just a lazy hack
@@ -87,23 +88,23 @@ contract HealthChart {
    }
 
     //A doctor can transfer his pacient to another doctor
-    function transferPatient(uint32 _newDoctorId, uint32 _patientId) public returns (bool) {
-        require(patients[_patientId].CurrantDoctor == msg.sender);
-        patients[_patientId].CurrantDoctor = doctors[_newDoctorId].DoctorAddress;
-        emit TransferPatient(_patientId);
+    function transferPatient(uint32 _newDoctorId, string memory _patientSsn) public returns (bool) {
+        require(patients[_patientSsn].CurrantDoctor == msg.sender);
+        patients[_patientSsn].CurrantDoctor = doctors[_newDoctorId].DoctorAddress;
+        emit TransferPatient(_patientSsn);
 
         return true;
     }
 
     //Any doctor can add a new event for a particular patient - i.e. broke leg on vacation
-    function addHealthEvent(uint32 _patientId, string memory _eventData) public returns (uint128) {
+    function addHealthEvent(string memory _patientSsn, string memory _eventData) public returns (uint128) {
         uint128 id = event_id++;
-        healthEvents[id].PatientId = _patientId;
+        healthEvents[id].PatientSsn = _patientSsn;
         healthEvents[id].DoctorAddress = msg.sender;
         healthEvents[id].EventData = _eventData;
         healthEvents[id].EventTimeStamp = uint32(block.timestamp);
-        eventsForPatient[_patientId].push(id); //Add a new event to the list
-        emit UpdateChart(_patientId, id);
+        eventsForPatient[_patientSsn].push(id); //Add a new event to the list
+        emit UpdateChart(_patientSsn, id);
         return id;
     }
 
@@ -120,14 +121,14 @@ contract HealthChart {
     }
 
     //Retrieve a patient
-    function getPatient(uint32 _patientId) public view returns (string memory, string memory, string memory, address) {
-        patient memory pat = patients[_patientId];
-        return(pat.SSN, pat.FirstName, pat.LastName, pat.CurrantDoctor);
+    function getPatient(string memory _patientSsn) public view returns (string memory, string memory, address) {
+        patient memory pat = patients[_patientSsn];
+        return(pat.FirstName, pat.LastName, pat.CurrantDoctor);
     }
 
     //Retrieve all events for a patient
-    function getEventsForPatient(uint32 _patientId) public view returns (uint128[] memory) {
-        return eventsForPatient[_patientId];
+    function getEventsForPatient(string memory _patientSsn) public view returns (uint128[] memory) {
+        return eventsForPatient[_patientSsn];
     }
 
     function getEventDetails(uint128 _eventId) public view returns (address, string memory, uint32) {
