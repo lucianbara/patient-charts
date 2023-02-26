@@ -136,25 +136,21 @@ export interface HealthChartInstance extends Truffle.ContractInstance {
 
   transferPatient: {
     (
-      _currentDoctorId: number | BN | string,
       _newDoctorId: number | BN | string,
       _patientId: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<Truffle.TransactionResponse<AllEvents>>;
     call(
-      _currentDoctorId: number | BN | string,
       _newDoctorId: number | BN | string,
       _patientId: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<boolean>;
     sendTransaction(
-      _currentDoctorId: number | BN | string,
       _newDoctorId: number | BN | string,
       _patientId: number | BN | string,
       txDetails?: Truffle.TransactionDetails
     ): Promise<string>;
     estimateGas(
-      _currentDoctorId: number | BN | string,
       _newDoctorId: number | BN | string,
       _patientId: number | BN | string,
       txDetails?: Truffle.TransactionDetails
@@ -305,25 +301,21 @@ export interface HealthChartInstance extends Truffle.ContractInstance {
 
     transferPatient: {
       (
-        _currentDoctorId: number | BN | string,
         _newDoctorId: number | BN | string,
         _patientId: number | BN | string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<Truffle.TransactionResponse<AllEvents>>;
       call(
-        _currentDoctorId: number | BN | string,
         _newDoctorId: number | BN | string,
         _patientId: number | BN | string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<boolean>;
       sendTransaction(
-        _currentDoctorId: number | BN | string,
         _newDoctorId: number | BN | string,
         _patientId: number | BN | string,
         txDetails?: Truffle.TransactionDetails
       ): Promise<string>;
       estimateGas(
-        _currentDoctorId: number | BN | string,
         _newDoctorId: number | BN | string,
         _patientId: number | BN | string,
         txDetails?: Truffle.TransactionDetails

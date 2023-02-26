@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 contract HealthChart {
     address private owner;
 
-    uint32 public doctor_id = 1; //Start with 1 so we can check for existing doctors
+    uint32 public doctor_id = 0;
     uint32 public pacient_id = 0;
     uint128 public event_id = 0;
 
@@ -52,9 +52,6 @@ contract HealthChart {
                         address _doctorAddress, 
                         string memory _firstName, 
                         string memory _lastName) public returns (uint32) {
-        //TODO: Add a check here - maybe this
-        if(doctor_id > 1)
-           require(doctorAddresses[msg.sender] > 0);
 
         uint32 id = doctor_id++;
         doctors[id].UserName = _userName;
@@ -90,15 +87,15 @@ contract HealthChart {
    }
 
     //A doctor can transfer his pacient to another doctor
-    function transferPatient(uint32 _currentDoctorId, uint32 _newDoctorId, uint32 _patientId) public returns (bool) {
-        require(patients[_patientId].CurrantDoctor == doctors[_currentDoctorId].DoctorAddress);
+    function transferPatient(uint32 _newDoctorId, uint32 _patientId) public returns (bool) {
+        require(patients[_patientId].CurrantDoctor == msg.sender);
         patients[_patientId].CurrantDoctor = doctors[_newDoctorId].DoctorAddress;
         emit TransferPatient(_patientId);
 
         return true;
     }
 
-    //A doctor can add a new event for a particular patient
+    //Any doctor can add a new event for a particular patient - i.e. broke leg on vacation
     function addHealthEvent(uint32 _patientId, string memory _eventData) public returns (uint128) {
         uint128 id = event_id++;
         healthEvents[id].PatientId = _patientId;
