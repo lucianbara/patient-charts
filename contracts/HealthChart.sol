@@ -16,7 +16,7 @@ contract HealthChart {
     }   
     mapping(uint32 => doctor) public doctors;
     mapping(address => uint32) public doctorAddresses;
-    mapping(string => doctor) public doctorUsers;
+    mapping(string => doctor) public doctorUserNames;
 
     struct patient {        
         string SSN;
@@ -35,8 +35,8 @@ contract HealthChart {
     mapping(uint128 => healthEvent) public healthEvents;
     mapping(string => uint128[]) public eventsForPatient; //Track the events for a patient
     
-    event UpdateChart(string patientSsn, uint128 healthEventId);
-    event TransferPatient(string patientSsn);
+    event UpdateChart(string indexed patientSsn, uint128 healthEventId);
+    event TransferPatient(string indexed patientSsn);
   
     constructor()  {
         owner = msg.sender;
@@ -52,7 +52,7 @@ contract HealthChart {
                         address _doctorAddress, 
                         string memory _firstName, 
                         string memory _lastName) public returns (uint32) {
-        require(doctorUsers[_userName].DoctorAddress == address(0), "Doctor already exists in the block chain");
+        require(doctorUserNames[_userName].DoctorAddress == address(0), "Doctor already exists in the block chain");
         uint32 id = doctor_id++;
         doctors[id].UserName = _userName;
         doctors[id].Password = _passWord;
@@ -61,7 +61,7 @@ contract HealthChart {
         doctors[id].LastName = _lastName;
 
         doctorAddresses[_doctorAddress] = id;
-        doctorUsers[_userName] = doctors[id];
+        doctorUserNames[_userName] = doctors[id];
 
         return id;
     }
@@ -89,7 +89,10 @@ contract HealthChart {
 
     //A doctor can transfer his pacient to another doctor
     function transferPatient(uint32 _newDoctorId, string memory _patientSsn) public returns (bool) {
+        //Only the current doctor can transfer a patient to another doctor
         require(patients[_patientSsn].CurrantDoctor == msg.sender);
+        //Doctor needs to exist
+        require(keccak256(abi.encodePacked(doctors[_newDoctorId].UserName)) != keccak256(abi.encodePacked("")));
         patients[_patientSsn].CurrantDoctor = doctors[_newDoctorId].DoctorAddress;
         emit TransferPatient(_patientSsn);
 
@@ -130,7 +133,7 @@ contract HealthChart {
     function getEventsForPatient(string memory _patientSsn) public view returns (uint128[] memory) {
         return eventsForPatient[_patientSsn];
     }
-
+    //Retrieve details for a particular event
     function getEventDetails(uint128 _eventId) public view returns (address, string memory, uint32) {
         healthEvent memory he = healthEvents[_eventId];
         return(he.DoctorAddress, he.EventData, he.EventTimeStamp);
