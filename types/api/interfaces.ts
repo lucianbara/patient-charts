@@ -6,6 +6,11 @@ export interface Doctor {
     lastName  : string;
 }
 
+import { Request } from "express"
+export interface DoctorRequest extends Request {
+  user: string // or any other type
+}
+
 export interface Patient {
     ssn           : string;
     firstName     : string;
@@ -14,6 +19,7 @@ export interface Patient {
 }
 
 export interface HealthEvent {
-    doctorAddress : string;
+    doctor : Doctor;
     eventDetails : string;
+    date : Date;
 }
